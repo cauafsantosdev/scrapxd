@@ -2,7 +2,7 @@ import requests
 import logging
 from time import sleep
 from fake_useragent import UserAgent
-from config import BASE_URL, FILM_URL
+from scrapxd.config import BASE_URL, FILM_URL
 
 
 log = logging.getLogger(__name__)
@@ -89,12 +89,3 @@ def fetch_by_year(year: int, page_num: int = 1, delay: int = 1) -> str:
 
     content = _fetch_page(url, delay)
     return content
-
-
-if __name__ == "__main__":
-    test1 = fetch_logs("methdrinkerr")
-    print(test1)
-
-    print()
-
-    test2 = fetch_logs("methdrinkerrr")

@@ -15,7 +15,7 @@ class Film(BaseModel):
     country: List[str] = []
     language: List[str] = []
     cast: Dict[str, str] = []
-    crew: Dict[str, List[str]] = []
+    crew: Dict[str, str | List[str]] = []
     studio: List[str] = None
     avg_rating: float
     total_logs: int

@@ -2,6 +2,7 @@ import requests
 import logging
 from time import sleep
 from fake_useragent import UserAgent
+from bs4 import BeautifulSoup
 from scrapxd.config import BASE_URL, FILM_URL
 
 
@@ -24,68 +25,77 @@ def _fetch_page(url: str, delay: int = 1):
         log.error(f"Request Error - {e}")
         raise
 
-def fetch_film(slug: str, delay: int = 1) -> str:
+def _make_soup(html: str) -> BeautifulSoup:
+    return BeautifulSoup(html, "lxml")
+
+def fetch_film(slug: str, delay: int = 1) -> BeautifulSoup:
     url = f"{FILM_URL}{slug}/"
 
     content = _fetch_page(url, delay)
-    return content
+    return _make_soup(content)
 
-def fetch_user(username: str, delay: int = 1) -> str:
+def fetch_nanogenres(slug: str, delay: int = 1) -> BeautifulSoup:
+    url = f"{FILM_URL}{slug}/nanogenres/"
+
+    content = _fetch_page(url, delay)
+    return _make_soup(content)
+
+def fetch_user(username: str, delay: int = 1) -> BeautifulSoup:
     url = f"{BASE_URL}{username}/"
 
     content = _fetch_page(url, delay)
-    return content
+    return _make_soup(content)
 
-def fetch_list(username: str, list_name: str, page_num: int = 1, delay: int = 1) -> str:
+def fetch_list(username: str, list_name: str, page_num: int = 1, delay: int = 1) -> BeautifulSoup:
     url = f"{BASE_URL}{username}/list/{list_name}/page/{page_num}/"
 
     content = _fetch_page(url, delay)
-    return content
+    return _make_soup(content)
 
-def fetch_watchlist(username: str, page_num: int = 1, delay: int = 1) -> str:
+def fetch_watchlist(username: str, page_num: int = 1, delay: int = 1) -> BeautifulSoup:
     url = f"{BASE_URL}{username}/watchlist/page/{page_num}/"
 
     content = _fetch_page(url, delay)
-    return content
+    return _make_soup(content)
 
-def fetch_diary(username: str, page_num: int = 1, delay: int = 1) -> str:
+def fetch_diary(username: str, page_num: int = 1, delay: int = 1) -> BeautifulSoup:
     url = f"{BASE_URL}{username}/films/diary/page/{page_num}/"
 
     content = _fetch_page(url, delay)
-    return content
+    return _make_soup(content)
 
-def fetch_reviews(username: str, page_num: int = 1 , delay: int = 1) -> str:
+def fetch_reviews(username: str, page_num: int = 1 , delay: int = 1) -> BeautifulSoup:
     url = f"{BASE_URL}{username}/films/reviews/page/{page_num}/"
 
     content = _fetch_page(url, delay)
-    return content
+    return _make_soup(content)
 
-def fetch_logs(username: str, page_num: int = 1, delay: int = 1) -> str:
+def fetch_logs(username: str, page_num: int = 1, delay: int = 1) -> BeautifulSoup:
     url = f"{BASE_URL}{username}/films/page/{page_num}"
 
     content = _fetch_page(url, delay)
-    return content
+    return _make_soup(content)
 
-def fetch_popular(page_num: int = 1, delay: int = 1) -> str:
+def fetch_popular(page_num: int = 1, delay: int = 1) -> BeautifulSoup:
     url = f"{BASE_URL}films/ajax/popular/page/{page_num}/"
 
     content = _fetch_page(url, delay)
-    return content
+    return _make_soup(content)
 
-def fetch_highest_rated(page_num: int = 1, delay: int = 1) -> str:
+def fetch_highest_rated(page_num: int = 1, delay: int = 1) -> BeautifulSoup:
     url = f"{BASE_URL}films/ajax/by/rating/page/{page_num}/"
 
     content = _fetch_page(url, delay)
-    return content
+    return _make_soup(content)
 
-def fetch_by_decade(decade: int, page_num: int = 1, delay: int = 1) -> str:
+def fetch_by_decade(decade: int, page_num: int = 1, delay: int = 1) -> BeautifulSoup:
     url = f"{BASE_URL}films/ajax/popular/decade/{decade}s/page/{page_num}/"
 
     content = _fetch_page(url, delay)
-    return content
+    return _make_soup(content)
 
-def fetch_by_year(year: int, page_num: int = 1, delay: int = 1) -> str:
+def fetch_by_year(year: int, page_num: int = 1, delay: int = 1) -> BeautifulSoup:
     url = f"{BASE_URL}films/ajax/popular/year/{year}/page/{page_num}/"
 
     content = _fetch_page(url, delay)
-    return content
+    return _make_soup(content)

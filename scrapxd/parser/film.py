@@ -43,7 +43,7 @@ def _parse_actor_links(soup: BeautifulSoup) -> BeautifulSoup:
     content = soup.find("div", class_="cast-list text-sluglist")
     return content.find_all("a", class_="text-slug tooltip")
 
-def parse_film(soup: BeautifulSoup) -> Film:
+def parse_film(soup: BeautifulSoup, nano_soup: BeautifulSoup | None = None) -> Film:
     slug = parse_slug(soup)
     id = parse_id(soup)
     title = parse_title(soup)
@@ -51,7 +51,7 @@ def parse_film(soup: BeautifulSoup) -> Film:
     runtime = parse_runtime(soup)
     director = parse_director(soup)
     genre = parse_genre(soup)
-    nanogenres = parse_nanogenres(soup)
+    nanogenres = parse_nanogenres(soup) if nano_soup else None
     themes = parse_themes(soup)
     country = parse_country(soup)
     language = parse_language(soup)
@@ -78,6 +78,63 @@ def parse_film(soup: BeautifulSoup) -> Film:
             studio = studio,
             avg_rating = avg_rating,
             total_logs = total_logs
+            )
+
+def parse_film_basic(soup: BeautifulSoup) -> Film:
+    slug = parse_slug(soup)
+    id = parse_id(soup)
+    title = parse_title(soup)
+    year = parse_year(soup)
+    runtime = parse_runtime(soup)
+    director = parse_director(soup)
+
+    return Film(
+            slug = slug,
+            id = id,
+            title = title,
+            year = year,
+            runtime = runtime,
+            director = director,
+            )
+
+def parse_film_custom(soup: BeautifulSoup, nano_soup: BeautifulSoup | None = None,
+                           genre: bool = False, themes: bool = False, country: bool = False,
+                           language: bool = False, cast: bool = False, crew: bool = False,
+                           studio: bool = False, avg_rating: bool = False, total_logs: bool = False) -> Film:
+    slug = parse_slug(soup)
+    id = parse_id(soup)
+    title = parse_title(soup)
+    year = parse_year(soup)
+    runtime = parse_runtime(soup)
+    director = parse_director(soup)
+    film_genre = parse_genre(soup) if genre else None
+    nanogenres = parse_nanogenres(soup) if nano_soup else None
+    film_themes = parse_themes(soup) if themes else None
+    film_country = parse_country(soup) if country else None
+    film_language = parse_language(soup) if language else None
+    film_cast = parse_cast(soup) if cast else None
+    film_crew = parse_crew(soup) if crew else None
+    film_studio = parse_studio(soup) if studio else None
+    film_avg_rating = parse_avg_rating(soup) if avg_rating else None
+    film_total_logs = parse_total_logs(soup) if total_logs else None
+
+    return Film(
+            slug = slug,
+            id = id,
+            title = title,
+            year = year,
+            runtime = runtime,
+            director = director,
+            genre = film_genre,
+            nanogenres = nanogenres,
+            themes = film_themes,
+            country = film_country,
+            language = film_language,
+            cast = film_cast,
+            crew = film_crew,
+            studio = film_studio,
+            avg_rating = film_avg_rating,
+            total_logs = film_total_logs
             )
 
 def parse_slug(soup: BeautifulSoup) -> str:
@@ -131,9 +188,12 @@ def parse_cast(soup: BeautifulSoup) -> Dict[str, str]:
 
     for actor in actor_links:
         name = str(actor.string)
-        character = actor.get("title").replace(" (uncredited)", "")
+        character = actor.get("title")
 
-        cast[name] = character
+        if character:
+            cast[name] = character.replace(" (uncredited)", "")
+        else:
+            cast[name] = "(Unnamed)"
 
     return cast
 
@@ -141,7 +201,7 @@ def parse_actors(soup: BeautifulSoup) -> List[str]:
     return [str(actor.string) for actor in _parse_actor_links(soup)]
 
 def parse_characters(soup: BeautifulSoup) -> List[str]:
-    return [actor.get("title").replace(" (uncredited)", "") for actor in _parse_actor_links(soup)]
+    return [actor.get("title").replace(" (uncredited)", "") for actor in _parse_actor_links(soup) if actor.get("title")]
 
 def parse_crew(soup: BeautifulSoup) -> Dict[str, str | List[str]]:
     content = soup.find("div", id="tab-crew")

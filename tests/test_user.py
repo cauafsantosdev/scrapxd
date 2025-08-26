@@ -1,9 +1,8 @@
-from scrapxd.fetcher import fetch_user, fetch_watchlist, fetch_diary, fetch_reviews, fetch_user_lists, fetch_logs
-import scrapxd.parser.user as su
+from scrapxd.models.user import User
 
-soup = fetch_logs("methdrinkerr")
+user = User(username="methdrinkerr")
 
-logs = su.parse_logs(soup)
+logs = user.logs()
 
 print(logs)
 print()

@@ -1,4 +1,4 @@
-from .entry_list import EntryList
+'''from .entry_list import EntryList
 from .entry import Entry
 from .film import Film
 from .user_list import UserList
@@ -11,4 +11,4 @@ __all__ = [
     'Entry',
     'User',
     'EntryList'
-]
+]'''

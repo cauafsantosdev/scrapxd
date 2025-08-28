@@ -1,0 +1,24 @@
+annotated-types==0.7.0
+beautifulsoup4==4.13.4
+bs4==0.0.2
+certifi==2025.4.26
+charset-normalizer==3.4.2
+fake-useragent==2.2.0
+idna==3.10
+iniconfig==2.1.0
+lxml==5.4.0
+packaging==25.0
+pluggy==1.6.0
+pydantic==2.11.5
+pydantic_core==2.33.2
+Pygments==2.19.1
+pytest==8.4.0
+requests==2.32.4
+-e git+https://github.com/cauafsantosdev/scrapxd@d4ff63693220ea08eecbe9c10975d2880dece25a#egg=scrapxd
+soupsieve==2.7
+style==1.1.0
+tenacity==9.1.2
+typing-inspection==0.4.1
+typing_extensions==4.14.0
+update==0.0.1
+urllib3==2.4.0

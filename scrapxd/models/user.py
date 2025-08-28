@@ -118,15 +118,15 @@ class User(BaseModel):
             return slug_list
         
         else:
-            return None
+            return []
         
     def _parse_slugs_with_rating(self, soup: BeautifulSoup) -> Optional[List[Tuple[str, float]]]:
-        film_li = soup.find_all("li", class_="poster-container")
+        films_li = soup.find_all("li", class_="poster-container")
 
-        if film_li:
+        if films_li:
             film_list = []
 
-            for item in film_li:
+            for item in films_li:
                 film_div = item.find("div", class_="really-lazy-load poster film-poster linked-film-poster")
                 slug = film_div.get("data-film-slug")
 
@@ -139,19 +139,19 @@ class User(BaseModel):
             return film_list
         
         else:
-            return None
+            return []
 
     def _parse_count(self, soup: BeautifulSoup, type: Literal["Watched", "Diary", "Reviews", "Lists"]) -> int:
         if type == "Lists":
             div = soup.find("div", id="content-nav")
-            content = div.find("span", class_="tooltip")
+            tooltip = div.find("span", class_="tooltip")
 
         else:
-            content = soup.find("a", class_="tooltip", string=type)
+            tooltip = soup.find("a", class_="tooltip", string=type)
 
-        raw_count = content.get("title")
-        match = re.match(r"\d+", raw_count)
-        return int(match.group(0))
+        raw_count = tooltip.get("title")
+        count_match = re.match(r"\d+", raw_count)
+        return int(count_match.group(0))
     
     def _parse_logs(self) -> EntryList:
         soup = self._get_soup(self.fetcher.fetch_logs, self.username)
@@ -180,10 +180,10 @@ class User(BaseModel):
 
         for row in rows:
             date_pattern = re.compile(r"/([^/]+)/films/diary/for/(\d{4}/\d{2}/\d{2})/")
-            date_link = row.find("a", href=date_pattern)
-            href = date_link.get("href")
-            match = date_pattern.search(href)
-            date_string = match.group(2)
+            date_anchor = row.find("a", href=date_pattern)
+            date_href = date_anchor.get("href")
+            date_match = date_pattern.search(date_href)
+            date_string = date_match.group(2)
             entry_date = date(int(date_string[0:4]), int(date_string[5:7]), int(date_string[8:10]))
 
             film_data = row.find("td", class_="td-actions film-actions has-menu hide-when-logged-out")
@@ -193,16 +193,16 @@ class User(BaseModel):
             raw_rating = rating_span.get("class")[1]
             rating = int(raw_rating[6:]) / 2
 
-            review_link = row.find("a", class_="has-icon icon-review icon-16 tooltip")
+            review_anchor = row.find("a", class_="has-icon icon-review icon-16 tooltip")
             
-            if review_link:
-                review_url = review_link.get("href")
+            if review_anchor:
+                review_url = review_anchor.get("href")
                 review = f"{BASE_URL}{review_url[1:]}"
 
             entry = Entry(film = slug, 
                         watched_date = entry_date, 
                         rating = rating, 
-                        review = review if review_link else None)
+                        review = review if review_anchor else None)
 
             diary_page.append(entry)
 
@@ -290,8 +290,8 @@ class User(BaseModel):
 
         list_description = soup.find("meta", attrs={"name": "description"})
         description_content = list_description.get("content")
-        match = re.search(r'(\d+)\s+films', description_content)
-        total_films = int(match.group(1))
+        count_match = re.search(r'(\d+)\s+films', description_content)
+        total_films = int(count_match.group(1))
 
         films = [slug for slug in self._parse_slugs(soup)]
 
@@ -304,8 +304,8 @@ class User(BaseModel):
 
         films = [Film(slug=slug) for slug in films]
 
-        numbered = soup.find("li", class_="poster-container numbered-list-item")
-        if numbered:
+        is_numbered = soup.find("li", class_="poster-container numbered-list-item")
+        if is_numbered:
             films = {i:v for i, v in enumerate(films, start=1)}
 
         return UserList(username = self.username,
@@ -313,16 +313,16 @@ class User(BaseModel):
                         number_of_films = total_films,
                         films = films)
 
-    def _parse_list_page(self, soup: BeautifulSoup) -> List[UserList] | None:
-        lists = soup.find_all("section", class_="list js-list -overlapped -summary")
+    def _parse_list_page(self, soup: BeautifulSoup) -> Optional[List[UserList]]:
+        lists_section = soup.find_all("section", class_="list js-list -overlapped -summary")
 
-        if lists:
+        if lists_section:
             lists_on_page = []
 
-            for film_list in lists:
-                list_link = film_list.find("a", class_="list-link")
-                href = list_link.get("href")
-                title_match = re.match(r'^list/([^/]+)/$', href)
+            for film_list in lists_section:
+                list_anchor = film_list.find("a", class_="list-link")
+                list_href = list_anchor.get("href")
+                title_match = re.match(r'^list/([^/]+)/$', list_href)
                 
                 list_soup = self._get_soup(self.fetcher.fetch_list, self.username, title_match)
 
@@ -330,7 +330,7 @@ class User(BaseModel):
             
             return lists_on_page
         
-        return None
+        return []
     
     def _parse_user_lists(self) -> Optional[List[UserList]]:
         soup = self._get_soup(self.fetcher.fetch_user_lists, self.username)
@@ -355,10 +355,10 @@ class User(BaseModel):
     def _parse_watchlist(self) -> UserList:
         soup = self._get_soup(self.fetcher.fetch_watchlist, self.username)
 
-        span_count = soup.find("span", class_="js-watchlist-count")
-        raw_count = str(span_count.string)
-        match = re.match(r"\d+", raw_count)
-        film_count = int(match.group(0))
+        count_span = soup.find("span", class_="js-watchlist-count")
+        raw_count = str(count_span.string)
+        count_match = re.match(r"\d+", raw_count)
+        film_count = int(count_match.group(0))
 
         watchlist_slugs = [slug for slug in self._parse_slugs(soup)]
 

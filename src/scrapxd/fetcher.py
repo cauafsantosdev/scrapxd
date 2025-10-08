@@ -11,8 +11,9 @@ import requests
 import logging
 from time import sleep
 from random import uniform
-from fake_useragent import UserAgent
+from typing import Optional
 from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
 from scrapxd.config import BASE_URL, FILM_URL
 from tenacity import retry, stop_after_attempt, wait_exponential
 
@@ -25,12 +26,18 @@ class Fetcher:
 
     This class encapsulates session management, headers, randomized user-agents,
     delays, and retry logic for all web scraping tasks.
+
+    Args:
+        delay (float): The default delay in seconds to wait between requests.
+            The real delay will be a random float between (delay - (delay/2)) and delay
+            Defaults to a random float between 1 and 3.
     """
-    def __init__(self):
+    def __init__(self, delay: float = 0):
         """Initializes the Fetcher, setting up the requests session and user agent."""
         self.ua = UserAgent()
         self.session = requests.Session()
         self.session.headers.update({'User-Agent': self.ua.random})
+        self.delay = delay
 
     @staticmethod
     def is_retryable_exception(exception: Exception) -> bool:
@@ -50,7 +57,7 @@ class Fetcher:
         wait=wait_exponential(multiplier=1, min=4, max=30),
         retry=is_retryable_exception
     )
-    def _fetch_page(self, url: str, delay: float = 1) -> bytes:
+    def _fetch_page(self, url: str, delay: float) -> bytes:
         """
         Performs a single, robust HTTP GET request with delays and retries.
 
@@ -69,7 +76,7 @@ class Fetcher:
         if delay <= 2.99:
             sleep_duration = round(uniform(1, 3), 2)
         else:
-            sleep_duration = round(uniform(delay / 2, delay), 2)
+            sleep_duration = round(uniform(delay - (delay / 2), delay), 2)
         
         log.debug(f"Sleeping for {sleep_duration:.2f} seconds before request.")
         sleep(sleep_duration)
@@ -90,7 +97,7 @@ class Fetcher:
         """Creates a BeautifulSoup object from raw HTML content."""
         return BeautifulSoup(html, "lxml")
 
-    def fetch_soup(self, url: str, delay: float = 1) -> BeautifulSoup:
+    def fetch_soup(self, url: str, delay: Optional[float] = None) -> BeautifulSoup:
         """
         Fetches a URL and returns its content as a BeautifulSoup object.
 
@@ -101,78 +108,81 @@ class Fetcher:
         Returns:
             BeautifulSoup: A parsed BeautifulSoup object of the page.
         """
-        content = self._fetch_page(url, delay)
+        request_delay = delay if delay is not None else self.delay
+
+        content = self._fetch_page(url, request_delay)
         return self._make_soup(content)
 
-    def fetch_film(self, slug: str, delay: float = 1) -> BeautifulSoup:
+    def fetch_film(self, slug: str, delay: Optional[float] = None) -> BeautifulSoup:
         """Fetches the main page for a specific film."""
         url = f"{FILM_URL}{slug}/"
         return self.fetch_soup(url, delay)
 
-    def fetch_nanogenres(self, slug: str, delay: float = 1) -> BeautifulSoup:
+    def fetch_nanogenres(self, slug: str, delay: Optional[float] = None) -> BeautifulSoup:
         """Fetches the nanogenres page for a specific film."""
         url = f"{FILM_URL}{slug}/nanogenres/"
         return self.fetch_soup(url, delay)
 
-    def fetch_user(self, username: str, delay: float = 1) -> BeautifulSoup:
+    def fetch_film_reviews(self, slug: str, page_num: int = 1, delay: Optional[float] = None) -> BeautifulSoup:
+        """Fetches a specific page of a film's popular reviews."""
+        url = f"{BASE_URL}film/{slug}/reviews/by/activity/page/{page_num}/"
+        return self.fetch_soup(url, delay)
+
+    def fetch_user(self, username: str, delay: Optional[float] = None) -> BeautifulSoup:
         """Fetches the main profile page for a specific user."""
         url = f"{BASE_URL}{username}/"
         return self.fetch_soup(url, delay)
 
-    def fetch_list(self, username: str, list_name: str, page_num: int = 1, delay: float = 1) -> BeautifulSoup:
+    def fetch_list(self, username: str, list_name: str, page_num: int = 1, delay: Optional[float] = None) -> BeautifulSoup:
         """Fetches a specific page of a user's list."""
         url = f"{BASE_URL}{username}/list/{list_name}/page/{page_num}/"
         return self.fetch_soup(url, delay)
 
-    def fetch_watchlist(self, username: str, page_num: int = 1, delay: float = 1) -> BeautifulSoup:
+    def fetch_watchlist(self, username: str, page_num: int = 1, delay: Optional[float] = None) -> BeautifulSoup:
         """Fetches a specific page of a user's watchlist."""
         url = f"{BASE_URL}{username}/watchlist/page/{page_num}/"
         return self.fetch_soup(url, delay)
 
-    def fetch_diary(self, username: str, page_num: int = 1, delay: float = 1) -> BeautifulSoup:
+    def fetch_diary(self, username: str, page_num: int = 1, delay: Optional[float] = None) -> BeautifulSoup:
         """Fetches a specific page of a user's diary."""
         url = f"{BASE_URL}{username}/films/diary/page/{page_num}/"
         return self.fetch_soup(url, delay)
 
-    def fetch_user_lists(self, username: str, page_num: int = 1, delay: float = 1) -> BeautifulSoup:
+    def fetch_user_lists(self, username: str, page_num: int = 1, delay: Optional[float] = None) -> BeautifulSoup:
         """Fetches a specific page of a user's collection of lists."""
         url = f"{BASE_URL}{username}/lists/page/{page_num}/"
         return self.fetch_soup(url, delay)
 
-    def fetch_reviews(self, username: str, page_num: int = 1 , delay: float = 1) -> BeautifulSoup:
+    def fetch_reviews(self, username: str, page_num: int = 1 , delay: Optional[float] = None) -> BeautifulSoup:
         """Fetches a specific page of a user's reviews."""
         url = f"{BASE_URL}{username}/films/reviews/page/{page_num}/"
         return self.fetch_soup(url, delay)
+    
+    def fetch_follows(self, username: str, page_num: int = 1 , delay: Optional[float] = None) -> BeautifulSoup:
+        """Fetches a specific page of a user's follows."""
+        url = f"{BASE_URL}{username}/following/page/{page_num}/"
+        return self.fetch_soup(url, delay)
+    
+    def fetch_followers(self, username: str, page_num: int = 1 , delay: Optional[float] = None) -> BeautifulSoup:
+        """Fetches a specific page of a user's followers."""
+        url = f"{BASE_URL}{username}/followers/page/{page_num}/"
+        return self.fetch_soup(url, delay)
 
-    def fetch_review_text(self, url: str, delay: float = 1) -> BeautifulSoup:
+    def fetch_review_text(self, url: str, delay: Optional[float] = None) -> BeautifulSoup:
         """Fetches the full text of a review given its relative URL."""
         url = f"{BASE_URL}{url}"
         return self.fetch_soup(url, delay)
 
-    def fetch_logs(self, username: str, page_num: int = 1, delay: float = 1) -> BeautifulSoup:
+    def fetch_logs(self, username: str, page_num: int = 1, delay: Optional[float] = None) -> BeautifulSoup:
         """Fetches a specific page of a user's film logs."""
         url = f"{BASE_URL}{username}/films/page/{page_num}/"
         return self.fetch_soup(url, delay)
 
-    def fetch_popular(self, page_num: int = 1, delay: float = 1) -> BeautifulSoup:
+    def fetch_search(self, query: str, page_num: int = 1, delay: Optional[float] = None) -> BeautifulSoup:
         """Fetches a page of popular films."""
-        url = f"{BASE_URL}films/ajax/popular/page/{page_num}/"
+        url = f"{BASE_URL}films/ajax/{query}/page/{page_num}/"
         return self.fetch_soup(url, delay)
 
-    def fetch_highest_rated(self, page_num: int = 1, delay: float = 1) -> BeautifulSoup:
-        """Fetches a page of the highest-rated films."""
-        url = f"{BASE_URL}films/ajax/by/rating/page/{page_num}/"
-        return self.fetch_soup(url, delay)
-
-    def fetch_by_decade(self, decade: int, page_num: int = 1, delay: float = 1) -> BeautifulSoup:
-        """Fetches a page of popular films from a specific decade."""
-        url = f"{BASE_URL}films/ajax/popular/decade/{decade}s/page/{page_num}/"
-        return self.fetch_soup(url, delay)
-
-    def fetch_by_year(self, year: int, page_num: int = 1, delay: float = 1) -> BeautifulSoup:
-        """Fetches a page of popular films from a specific year."""
-        url = f"{BASE_URL}films/ajax/popular/year/{year}/page/{page_num}/"
-        return self.fetch_soup(url, delay)
 
 # A single instance of the Fetcher to be used throughout the library,
 # ensuring a single session is used for all requests.

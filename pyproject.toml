@@ -8,13 +8,14 @@ version = "0.1.0"
 authors = [
   { name="Cauã Santos", email="cauafsantosdev@gmail.com" },
 ]
-description = "A Letterboxd web scraper library."
+description = "A Python library for scraping, analysing and exporting Letterboxd data."
 readme = "README.md"
-requires-python = ">=3.9"
-license = { text = "MIT" }
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+keywords = ["letterboxd", "scraper", "web scraping", "api", "movies"] 
 classifiers = [
+    "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: Developers",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -26,10 +27,29 @@ dependencies = [
     "beautifulsoup4",
     "lxml",
     "fake-useragent",
-    "pydantic"
+    "pydantic",
+    "tenacity",
 ]
+
+[project.urls]
+Homepage = "https://github.com/cauafsantosdev/scrapxd"
+Repository = "https://github.com/cauafsantosdev/scrapxd"
+"Bug Tracker" = "https://github.com/cauafsantosdev/scrapxd/issues"
 
 [project.optional-dependencies]
 test = [
     "pytest",
+    "pytest-cov",
+    "pytest-mock",
+]
+analytics = [
+    "scipy", # For correlation
+]
+export = [
+    "openpyxl", # For .xlsx exporting (Excel)
+]
+all = [
+    "scrapxd[test]",
+    "scrapxd[analytics]",
+    "scrapxd[export]",
 ]

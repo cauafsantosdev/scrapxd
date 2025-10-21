@@ -106,7 +106,9 @@ def test_fetch_page_server_error_with_retry(mocker, mock_requests):
     # Create a list of responses to be returned on each call
     mock_failure_response = mocker.Mock()
     mock_failure_response.status_code = 503
-    mock_failure_response.raise_for_status.side_effect = requests.exceptions.HTTPError("Service Unavailable")
+    mock_failure_response.raise_for_status.side_effect = requests.exceptions.HTTPError(
+        "Service Unavailable", response=mock_failure_response
+    )
 
     mock_success_response = mocker.Mock()
     mock_success_response.status_code = 200

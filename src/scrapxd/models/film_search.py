@@ -128,10 +128,11 @@ class FilmSearch(ScraperBase):
         """
         films = []
 
-        film_divs = self._safe_find_all(soup, "div", class_="react-component")
+        films_li = self._safe_find_all(soup, "li", class_="posteritem")
 
         for i in range(start, end):
-            slug = film_divs[i].get("data-item-slug")
+            div = self._safe_find(films_li[i], "div", class_="react-component")
+            slug = div.get("data-item-slug")
             if slug:
                 films.append(Film(slug=slug))
         

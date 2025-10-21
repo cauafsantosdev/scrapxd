@@ -14,8 +14,8 @@ from random import uniform
 from typing import Optional
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
-from scrapxd.config import BASE_URL, FILM_URL
-from tenacity import retry, stop_after_attempt, wait_exponential
+from .config import BASE_URL, FILM_URL
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 # Get a logger instance for this module
 log = logging.getLogger(__name__)
@@ -47,15 +47,20 @@ class Fetcher:
         Used by the `tenacity` retry decorator to retry only on specific
         server-side errors or rate-limiting HTTP status codes.
         """
-        return (
-            isinstance(exception, requests.exceptions.HTTPError) and
-            exception.response.status_code in [429, 500, 502, 503, 504]
-        )
+        if not isinstance(exception, requests.exceptions.HTTPError):
+            return False
+
+        # Safely access response.status_code
+        response = getattr(exception, "response", None)
+        if response is None or not hasattr(response, "status_code"):
+            return False
+
+        return response.status_code in [429, 500, 502, 503, 504]
 
     @retry(
         stop=stop_after_attempt(5),
         wait=wait_exponential(multiplier=1, min=4, max=30),
-        retry=is_retryable_exception
+        retry=retry_if_exception(is_retryable_exception)
     )
     def _fetch_page(self, url: str, delay: float) -> bytes:
         """

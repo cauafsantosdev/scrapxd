@@ -456,7 +456,10 @@ class User(ScraperBase, DataExport):
             div = self._safe_find(soup, "div", id="content-nav")
             tooltip = self._safe_find(div, "span", class_="tooltip")
 
-            raw_count = tooltip.get("title")
+            raw_count = tooltip.get("data-original-title")
+            if not raw_count:
+                raw_count = tooltip.get("title")
+
             count_match = re.match(r"\d+", raw_count)
             return int(count_match.group(0))
         except (AttributeError, TypeError, ValueError) as e:

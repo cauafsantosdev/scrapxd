@@ -459,6 +459,7 @@ class User(ScraperBase, DataExport):
             raw_count = tooltip.get("data-original-title")
             if not raw_count:
                 raw_count = tooltip.get("title")
+            raw_count = raw_count.replace(",", "")
 
             count_match = re.match(r"\d+", raw_count)
             return int(count_match.group(0))

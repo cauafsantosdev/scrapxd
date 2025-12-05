@@ -1,10 +1,9 @@
-
 # scrapxd: The Library for Letterboxd Data
 
 [![PyPI Version](https://img.shields.io/pypi/v/scrapxd.svg)](https://pypi.org/project/scrapxd/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/scrapxd.svg)](https://pypi.org/project/scrapxd/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/cauafsantosdev/scrapxd)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/cauafsantosdev/scrapxd)[![Tests](https://github.com/cauafsantosdev/scrapxd/actions/workflows/ci.yml/badge.svg)](https://github.com/cauafsantosdev/scrapxd)
 
 `scrapxd` is a Python library designed for web scraping, analyzing, and exporting data from [Letterboxd](https://letterboxd.com/), the social network for cinephiles. With an intuitive, strictly-typed API using Pydantic, `scrapxd` makes it easy to access user profiles, film lists, diaries, and much more.
 
@@ -93,8 +92,6 @@ try:
 except ImportError:
     print("\nTo export data, please install with: pip install \"scrapxd[export]\"")
 ```
-
-
 
 ---
 

@@ -93,9 +93,9 @@ class DataExport:
         if not filepath and not filename:
             filename = self._get_filename(extension=".csv")
         elif filepath:
-            path = f"{filepath.replace(".csv", "")}.csv"
+            path = f"{filepath.replace('.csv', '')}.csv"
         else:
-            path = f"{file_dir}/{filename.replace(".csv", "")}.csv" if file_dir else f"{filename.replace(".csv", "")}.csv"
+            path = f"{file_dir}/{filename.replace('.csv', '')}.csv" if file_dir else f"{filename.replace('.csv', '')}.csv"
         
         with open(path, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.DictWriter(file, fieldnames=data_to_export[0].keys())
@@ -131,9 +131,9 @@ class DataExport:
         if not filepath and not filename:
             filename = self._get_filename(extension=".xlsx")
         elif filepath:
-            path = f"{filepath.replace(".xlsx", "")}.xlsx"
+            path = f"{filepath.replace('.xlsx', '')}.xlsx"
         else:
-            path = f"{file_dir}/{filename.replace(".xlsx", "")}.xlsx" if file_dir else f"{filename.replace(".xlsx", "")}.xlsx"
+            path = f"{file_dir}/{filename.replace('.xlsx', '')}.xlsx" if file_dir else f"{filename.replace('.xlsx', '')}.xlsx"
         
         workbook = openpyxl.Workbook()
         sheet = workbook.active
